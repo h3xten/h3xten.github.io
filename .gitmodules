@@ -1,0 +1,3 @@
+[submodule "Diary/themes/nostyleplease"]
+	path = Diary/themes/nostyleplease
+	url = https://github.com/hanwenguo/hugo-theme-nostyleplease.git
