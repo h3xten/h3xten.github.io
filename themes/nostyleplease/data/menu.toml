@@ -1,0 +1,28 @@
+[[entries]]
+title = "关于"
+  url = "/about"
+
+  [[entries.entries]]
+  title = "Mail to me"
+  url = "mailto:dongliang_cq@qq.com"
+
+  [[entries.entries]]
+  title = "GitHub profile"
+  url = "https://github.com/h3xten"
+
+[[entries]]
+title = "文章"
+
+  [entries.post_list]
+  limit = 10
+  show_more = true
+  show_more_text = "See archive..."
+  show_more_url = "posts"
+
+[[entries]]
+title = "标签"
+url = "/tags"
+
+[[entries]]
+title = "订阅"
+url = "index.xml"
