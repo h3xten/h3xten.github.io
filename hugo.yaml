@@ -1,7 +1,47 @@
 baseURL: https://3xten.github.io/
 languageCode: zh
 title: H3xten's Diary
-theme: nostyleplease
+theme: diary
 
 taxonomies:
   tag: tags
+
+markup:
+  highlight:
+  codeFences: true
+  guessSyntax: false
+  hl_Lines: ""
+  lineNoStart: 1
+  lineNos: false
+  lineNumbersInTable: true
+  noClasses: true
+  style: "perldoc"
+  tabWidth: 4
+
+params:
+  enableGiscus: true
+  giscus:
+    data_repo: "h3xten/h3xten.github.io"
+    data_repo_id: "R_kgDOM3iKkw"
+    data_category: "Announcements"
+    data_category_id: "DIC_kwDOM3iKk84Ci2OV"
+    data_mapping: "title"
+    data_strict: "0"
+    data_reactions_enabled: "1"
+    data_emit_metadata: "0"
+    data_input_position: "top"
+    data_theme: "preferred_color_scheme"
+    data_lang: "zh-CN"
+    crossorigin: "anonymous"
+
+menu:
+  main:
+    - url: "/posts"
+      name: "归档"
+      weight: 1
+    - url: "/tags"
+      name: "标签"
+      weight: 2
+    - url: "/index.xml"
+      name: "订阅"
+      weight: 3
