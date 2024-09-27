@@ -1,6 +1,0 @@
-[submodule "Diary/themes/nostyleplease"]
-	path = Diary/themes/nostyleplease
-	url = https://github.com/hanwenguo/hugo-theme-nostyleplease.git
-[submodule "themes/diary"]
-	path = themes/diary
-	url = https://github.com/AmazingRise/hugo-theme-diary.git
