@@ -1,7 +1,7 @@
 baseURL: https://3xten.github.io/
 languageCode: zh
 title: H3xten's Diary
-theme: diary
+theme: diary2
 
 taxonomies:
   tag: tags
