@@ -24,7 +24,7 @@ main() {
     }
 }
 ```
-我们用`strace`命令跟踪一下这段代码的执行
+我们用*strace*命令跟踪一下这段代码的执行
 ```shell
 ......
 clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7fc07fca0a10) = 7206
@@ -35,13 +35,13 @@ exit_group(0)                           = ?
 +++ exited with 0 +++
 ```
 
-可以看到，不管是创建`fork()`还是`pthread_create()`，都是通过`clone()`这个系统调用来实现的，但是两者传入的参数，特别是在*flags*上又有着不小的差异。
+可以看到，不管是创建 *fork()* 还是 *pthread_create()* ，都是通过 *clone()* 这个系统调用来实现的，但是两者传入的参数，特别是在 *flags* 上又有着不小的差异。
 
-那么`clone()`到底做了什么呢？
+那么 *clone()* 到底做了什么呢？
 
-通过检查系统调用表[syscall_64.tbl](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/syscalls/syscall_64.tbl)，可以发现`clone()`系统调用由`sys_clone()`函数处理。
+通过检查系统调用表[syscall_64.tbl](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/syscalls/syscall_64.tbl)，可以发现 *clone()* 系统调用由 *sys_clone()* 函数处理。
 
-再在[fork.c](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/kernel/fork.c)文件中找到`sys_clone()`函数定义
+再在[fork.c](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/kernel/fork.c)文件中找到 *sys_clone()* 函数定义
 ```c
 SYSCALL_DEFINE6(clone, unsigned long, clone_flags, unsigned long, newsp,
 		int, stack_size,
@@ -63,7 +63,7 @@ SYSCALL_DEFINE6(clone, unsigned long, clone_flags, unsigned long, newsp,
 }
 ```
 
-这个由`SYSCALL_DEFINE6`宏定义的`sys_clone()`函数转头调用了`kernel_clone()`，`kernel_clone()`函数又调用了`copy_process()`。来关注一下它的注释部分。
+这个由 *SYSCALL_DEFINE6* 宏定义的 *sys_clone()* 函数转头调用了 *kernel_clone()* ，*kernel_clone()* 函数又调用了 *copy_process()* 。来关注一下它的注释部分。
 ```c
 /*
  * This creates a new process as a copy of the old one,
@@ -76,9 +76,9 @@ SYSCALL_DEFINE6(clone, unsigned long, clone_flags, unsigned long, newsp,
 __latent_entropy struct task_struct *copy_process(
 ```
 
-嗯，看来`copy_process()`的主要工作是从旧的*process*中复制一个新的出来，可以注意到它返回一个`task_struct *`类型的指针。
+嗯，看来 *copy_process()* 的主要工作是从旧的 *process* 中复制一个新的出来，可以注意到它返回一个 *task_struct \** 类型的指针。
 
-这个`task_struct`是干什么用的？再回到`kernel_clone()`函数。
+这个 *task_struct* 是干什么用的？再回到 *kernel_clone()* 函数。
 
 ```c
 /*
@@ -103,9 +103,9 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 }
 ```
 
-在复制完*process*以后，用得到的`task_struct`指针调用了一个名为`wake_up_new_task()`的函数。从名字可以看出，这个函数的作用，应该是唤醒这个复制出来的东西。
+在复制完 *process* 以后，用得到的 *task_struct* 指针调用了一个名为 *wake_up_new_task()* 的函数。从名字可以看出，这个函数的作用，应该是唤醒这个复制出来的东西。
 
-在[core.c](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/kernel/sched/core.c)中继续跟踪`wake_up_new_task()`函数。
+在[core.c](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/kernel/sched/core.c)中继续跟踪 *wake_up_new_task()* 。
 
 ```c
 /*
@@ -132,7 +132,7 @@ void wake_up_new_task(struct task_struct *p)
 }
 ```
 
-果然跟猜的差不多，这里做一些初始化操作，之后把复制得到的`task_struct`结构体放到一个叫`runqueue`的东西上，然后唤醒它。
+果然跟猜的差不多，这里做一些初始化操作，之后把复制得到的 *task_struct* 结构体放到一个叫 *runqueue* 的东西上，然后唤醒它。
 
 ### 二、内核调度实体(KSE, Kernel Scheduling Entity)
 
@@ -142,13 +142,13 @@ void wake_up_new_task(struct task_struct *p)
 
 这些等待被内核选中交给CPU运行的任务，就叫做内核调度实体。
 
-这些任务也就是上面`copy_process()`所创建的`task_struct`，由`runqueue`维护，它是一个`struct rq *`类型的指针，每个cpu都有自己的`runqueue`。
+这些任务也就是上面 *copy_process()* 所创建的 *task_struct* ，由 *runqueue* 维护，它是一个 *struct rq \** 类型的指针，每个cpu都有自己的 *runqueue*。
 
 也就是说，线程与进程并无区别，都是内核调度实体？
 
 ### 三、资源共享
 
-再回到`copy_process()`函数，可以看到这里有针对参数*flags*的处理，而*flags*是`fork()`与`pthread_create()`两个方法调用`clone()`时最大的不同点。
+再回到 *copy_process()* 函数，可以看到这里有针对参数 *flags* 的处理，而 *flags* 是 *fork()* 与 *pthread_create()* 两个方法调用 *clone()* 时最大的不同点。
 ```c
 ......
 const u64 clone_flags = args->flags;
@@ -181,7 +181,7 @@ retval = copy_thread(p, args);
 ......
 ```
 
-看来关键点在这里了。我们选择一个简单的`copy_files`函数跟踪，看看不同*flag*会有什么不同的处理
+看来关键点在这里了。我们选择一个简单的 *copy_files* 函数跟踪，看看不同 *flag* 会有什么不同的处理
 ```c
 static int copy_files(unsigned long clone_flags, struct task_struct *tsk,
 		      int no_files)
@@ -217,25 +217,25 @@ out:
 }
 ```
 
-方法很简单，可以看到，如果调用`clone()`时指定了`CLONE_FILES`，在执行`copy_files`时，就只是简单地将`files->count`加1，然后返回。如果未指定`CLONE_FILES`，则需要调用`dup_fd()`复制文件描述符，并将复制出来的文件描述符赋值给新创建的`task_struct`。
+方法很简单，可以看到，如果调用 *clone()* 时指定了 *CLONE_FILES* ，在执行 *copy_files* 时，就只是简单地将 *files->count* 加1，然后返回。如果未指定 *CLONE_FILES*，则需要调用 *dup_fd()* 复制文件描述符，并将复制出来的文件描述符赋值给新创建的 *task_struct*。
 
-显然，如果文件描述符被复制，在新的`task_struct`运行时关闭此前打开的文件描述符，**并不影响**原来的`task_struct`，其他如`fs`、`namespace`、`mm`等资源也同理。
+显然，如果文件描述符被复制，在新的 *task_struct* 运行时关闭此前打开的文件描述符，**并不影响**原来的 *task_struct*，其他如 *fs*、*namespace*、*mm*等资源也同理。
 
-这也就是说，如果是采用的`fork()`创建的`task_struct`，大部分资源与原`task_struct`隔离开的，互不影响。而`pthread_create()`创建的`task_struct`则采用了资源共享的方式。
+这也就是说，如果是采用的*fork()*创建的*task_struct*，大部分资源与原*task_struct*隔离开的，互不影响。而*pthread_create()*创建的*task_struct*则采用了资源共享的方式。
 
-所以，Linux内核里并没有线程与进程的概念，统一都叫做`task`。
+所以，Linux内核里并没有线程与进程的概念，统一都叫做*task*。
 
 ### 四、线程模型
 
-不过，我们在讨论*线程*的时候，真的是在说`task_struct`吗？
+不过，我们在讨论*线程*的时候，真的是在说*task_struct*吗？
 
-线程可以分为用户态线程和内核态线程。`pthread`是一个用户态线程库标准，全称是`POSIX thread`。而`NPTL`是它在Linux平台实现的一个库函数，全称为`Native POSIX Thread Library`。
+线程可以分为用户态线程和内核态线程。*pthread*是一个用户态线程库标准，全称是*POSIX thread*。而*NPTL*是它在Linux平台实现的一个库函数，全称为*Native POSIX Thread Library*。
 
-而显然，`task_struct`是一个内核态的“线程”。为何我们调用`pthread_create()`会为我们复制一个内核态的“线程”呢？
+而显然，*task_struct*是一个内核态的“线程”。为何我们调用 *pthread_create()* 会为我们复制一个内核态的“线程”呢？
 
-这是因为`NPTL`采用了1:1的线程模型。也就是说，我们在用户态创建的每一个线程，在内核都有一个对应的可调度实体。
+这是因为*NPTL*采用了1:1的线程模型。也就是说，我们在用户态创建的每一个线程，在内核都有一个对应的可调度实体。
 
-因此在Linux下，线程的切换分为两类：一类是线程间的切换，称为`context switch`；另一类是同一线程在用户态与内核态之间的切换，称为`mode switch`。
+因此在Linux下，线程的切换分为两类：一类是线程间的切换，称为*context switch*；另一类是同一线程在用户态与内核态之间的切换，称为*mode switch*。
 
 当我们需要从一个线程A切换到另一个线程B时，首先A会从用户态进入到内核态，然后在内核里从线程A切换到线程B，最后从线程B的内核态切换到线程B的用户态，开始执行用户态代码。
 
